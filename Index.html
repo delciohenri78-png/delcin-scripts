@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delcin Scripts 😈🔥</title>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK (v9 Compat para inclusão via CDN) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #0b0612;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Notificação Toast Flutuante */
+        #notification-toast {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            z-index: 1000;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #notification-toast.show {
+            top: 25px;
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            border: 1px solid #34d399;
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+            border: 1px solid #f87171;
+        }
+
+        /* Modal do Painel ADM */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 2, 10, 0.85);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .modal-card {
+            background: #140a26;
+            border: 2px solid #8b5cf6;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 550px;
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Header / Navbar */
+        header {
+            background: rgba(18, 9, 36, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid #2e1065;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #a855f7;
+            text-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo:hover {
+            transform: scale(1.03);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .discord-btn {
+            background: #5865F2;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4);
+        }
+
+        .discord-btn:hover {
+            background: #4752C4;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.6);
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Auth Container */
+        .auth-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .auth-box {
+            background: #140a26;
+            border: 2px solid #3b0764;
+            border-radius: 20px;
+            padding: 35px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 25px;
+            background: #0b0612;
+            padding: 5px;
+            border-radius: 12px;
+            border: 1px solid #2e1065;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            color: #9ca3af;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #7c3aed;
+            color: white;
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.5);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: #c084fc;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            background: #0b0612;
+            border: 1px solid #4c1d95;
+            border-radius: 10px;
+            color: white;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #a855f7;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #7c3aed, #9333ea);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.6);
+        }
+
+        /* App Content */
+        #app-content {
+            display: none;
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Equipe Section */
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #c084fc;
+            margin-bottom: 25px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(192, 132, 252, 0.4);
+        }
+
+        .staff-grid {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: stretch;
+            gap: 25px;
+            margin-bottom: 50px;
+            flex-wrap: nowrap;
+        }
+
+        /* Card da Equipe com Animação RGB Neon */
+        @keyframes rgbBorder {
+            0% { border-color: #ff0000; box-shadow: 0 0 15px rgba(255,0,0,0.4); }
+            20% { border-color: #8b00ff; box-shadow: 0 0 15px rgba(139,0,255,0.4); }
+            40% { border-color: #0000ff; box-shadow: 0 0 15px rgba(0,0,255,0.4); }
+            60% { border-color: #00ffff; box-shadow: 0 0 15px rgba(0,255,255,0.4); }
+            80% { border-color: #00ff00; box-shadow: 0 0 15px rgba(0,255,0,0.4); }
+            100% { border-color: #ff0000; box-shadow: 0 0 15px rgba(255,0,0,0.4); }
+        }
+
+        .staff-card {
+            flex: 1;
+            min-width: 0;
+            background: #140a26;
+            border: 2px solid #ff0000;
+            animation: rgbBorder 6s linear infinite;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .staff-card:hover {
+            transform: translateY(-8px) scale(1.02);
+        }
+
+        .staff-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 3px solid #7c3aed;
+        }
+
+        .staff-role {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #e9d5ff;
+            margin-bottom: 5px;
+        }
+
+        .staff-name {
+            font-size: 0.9rem;
+            color: #a855f7;
+            font-weight: 600;
+        }
+
+        /* Categorias & Scripts */
+        .category-filter {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 35px;
+            flex-wrap: wrap;
+        }
+
+        .cat-btn {
+            padding: 10px 22px;
+            background: #1e1035;
+            border: 1px solid #4c1d95;
+            color: #d8b4fe;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .cat-btn.active, .cat-btn:hover {
+            background: #7c3aed;
+            color: white;
+            border-color: #a855f7;
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
+        }
+
+        .scripts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .script-card {
+            background: #140a26;
+            border: 1px solid #3b0764;
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s;
+        }
+
+        .script-card:hover {
+            border-color: #8b5cf6;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.2);
+        }
+
+        .script-img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+        }
+
+        .script-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .script-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #f3e8ff;
+            margin-bottom: 8px;
+        }
+
+        .script-desc {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            margin-bottom: 20px;
+            flex: 1;
+        }
+
+        .action-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-action-site {
+            flex: 1;
+            padding: 10px;
+            background: #6d28d9;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-action-site:hover {
+            background: #5b21b6;
+        }
+
+        .btn-copy {
+            padding: 10px 14px;
+            background: #1e1035;
+            border: 1px solid #6d28d9;
+            color: #c084fc;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .btn-copy:hover {
+            background: #6d28d9;
+            color: white;
+        }
+
+        /* Formulários do Painel ADM */
+        .adm-section {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #2e1065;
+        }
+
+        .adm-section h3 {
+            color: #c084fc;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .staff-grid {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Notificação Toast -->
+    <div id="notification-toast">
+        <i id="toast-icon" class="fas"></i>
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- Header / Navbar -->
+    <header>
+        <div class="logo" id="site-logo-title" onclick="openAdmModal()">
+            Delcin Scripts 😈🔥
+        </div>
+        <div class="header-actions">
+            <a href="https://discord.gg" id="discord-link-btn" target="_blank" class="discord-btn">
+                <i class="fab fa-discord"></i> Discord
+            </a>
+            <button id="logout-btn" class="logout-btn" style="display: none;" onclick="logout()">Sair</button>
+        </div>
+    </header>
+
+    <!-- Tela de Autenticação Separada (Início) -->
+    <div class="auth-wrapper" id="auth-container">
+        <div class="auth-box">
+            <div class="auth-tabs">
+                <button class="tab-btn active" id="tab-login-btn" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn" id="tab-register-btn" onclick="switchTab('register')">Criar Cadastro</button>
+            </div>
+
+            <!-- Formulário de Login -->
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Nome do Discord</label>
+                    <input type="text" id="login-username" class="form-control" placeholder="Seu nome no Discord" required>
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" id="login-password" class="form-control" placeholder="Sua senha" required>
+                </div>
+                <button type="submit" class="btn-primary">Entrar</button>
+            </form>
+
+            <!-- Formulário de Cadastro -->
+            <form id="register-form" style="display: none;" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Nome do Discord</label>
+                    <input type="text" id="reg-username" class="form-control" placeholder="Ex: Delcin#1234" required>
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" id="reg-password" class="form-control" placeholder="Crie uma senha" required>
+                </div>
+                <button type="submit" class="btn-primary">Cadastrar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Conteúdo Interno do Site (Revelado somente após Login) -->
+    <main id="app-content">
+        
+        <!-- Seção 3 Abas Equipe -->
+        <h2 class="section-title">Nossa Equipe</h2>
+        <div class="staff-grid">
+            <div class="staff-card">
+                <img src="https://via.placeholder.com/100/7c3aed/ffffff?text=Dono" id="staff-img-1" class="staff-avatar">
+                <div class="staff-role" id="staff-role-1">Dono</div>
+                <div class="staff-name" id="staff-name-1">@Delcin</div>
+            </div>
+            <div class="staff-card">
+                <img src="https://via.placeholder.com/100/7c3aed/ffffff?text=Staff" id="staff-img-2" class="staff-avatar">
+                <div class="staff-role" id="staff-role-2">Dono Staff</div>
+                <div class="staff-name" id="staff-name-2">@StaffMaster</div>
+            </div>
+            <div class="staff-card">
+                <img src="https://via.placeholder.com/100/7c3aed/ffffff?text=Site" id="staff-img-3" class="staff-avatar">
+                <div class="staff-role" id="staff-role-3">Dono Site</div>
+                <div class="staff-name" id="staff-name-3">@DevDelcin</div>
+            </div>
+        </div>
+
+        <!-- Seção Categorias & Scripts -->
+        <h2 class="section-title">Scripts & Recursos</h2>
+        
+        <div class="category-filter" id="category-filter-list">
+            <button class="cat-btn active" onclick="filterCategory('all')">Todos</button>
+        </div>
+
+        <div class="scripts-grid" id="scripts-container">
+            <!-- Cards de Scripts são gerados aqui -->
+        </div>
+
+    </main>
+
+    <!-- Modal Painel ADM -->
+    <div class="modal-overlay" id="adm-modal">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: #a855f7;">Painel ADM</h2>
+                <button onclick="closeAdmModal()" style="background:none; border:none; color:#9ca3af; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+
+            <!-- Autenticação ADM -->
+            <div id="adm-auth-step">
+                <div class="form-group">
+                    <label>Senha de Acesso ADM</label>
+                    <input type="password" id="adm-password-input" class="form-control" placeholder="Digite a senha ADM">
+                </div>
+                <button onclick="verifyAdmPassword()" class="btn-primary">Acessar Painel</button>
+            </div>
+
+            <!-- Conteúdo do Painel ADM -->
+            <div id="adm-dashboard-step" style="display: none;">
+                
+                <!-- Link do Discord -->
+                <div class="adm-section">
+                    <h3>Link do Servidor Discord</h3>
+                    <div class="form-group">
+                        <input type="text" id="adm-discord-link" class="form-control" placeholder="URL do convite do Discord">
+                    </div>
+                    <button onclick="saveDiscordLink()" class="btn-primary" style="padding:8px 15px; font-size:0.85rem;">Salvar Link Discord</button>
+                </div>
+
+                <!-- Gestão da Equipe -->
+                <div class="adm-section">
+                    <h3>Editar Cards da Staff</h3>
+                    <div class="form-group">
+                        <label>Foto + Nome (Dono)</label>
+                        <input type="text" id="adm-staff1-img" class="form-control" placeholder="Link da foto Dono" style="margin-bottom: 5px;">
+                        <input type="text" id="adm-staff1-name" class="form-control" placeholder="Nome Dono">
+                    </div>
+                    <div class="form-group">
+                        <label>Foto + Nome (Dono Staff)</label>
+                        <input type="text" id="adm-staff2-img" class="form-control" placeholder="Link foto Dono Staff" style="margin-bottom: 5px;">
+                        <input type="text" id="adm-staff2-name" class="form-control" placeholder="Nome Dono Staff">
+                    </div>
+                    <div class="form-group">
+                        <label>Foto + Nome (Dono Site)</label>
+                        <input type="text" id="adm-staff3-img" class="form-control" placeholder="Link foto Dono Site" style="margin-bottom: 5px;">
+                        <input type="text" id="adm-staff3-name" class="form-control" placeholder="Nome Dono Site">
+                    </div>
+                    <button onclick="saveStaffConfig()" class="btn-primary" style="padding:8px 15px; font-size:0.85rem;">Salvar Equipe</button>
+                </div>
+
+                <!-- Gestão de Categoria -->
+                <div class="adm-section">
+                    <h3>Criar Nova Categoria</h3>
+                    <div class="form-group">
+                        <input type="text" id="adm-new-cat" class="form-control" placeholder="Nome da Categoria">
+                    </div>
+                    <button onclick="createCategory()" class="btn-primary" style="padding:8px 15px; font-size:0.85rem;">Adicionar Categoria</button>
+                </div>
+
+                <!-- Adicionar Script / Recurso -->
+                <div class="adm-section">
+                    <h3>Adicionar Novo Script</h3>
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" id="adm-script-title" class="form-control" placeholder="Título do Script">
+                    </div>
+                    <div class="form-group">
+                        <label>Link da Foto/Imagem</label>
+                        <input type="text" id="adm-script-img" class="form-control" placeholder="URL da Imagem">
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <textarea id="adm-script-desc" class="form-control" rows="2" placeholder="Descrição do recurso"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select id="adm-script-category" class="form-control"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Conteúdo (Link OU Código/Script)</label>
+                        <input type="text" id="adm-script-content" class="form-control" placeholder="https://link.com OU código do script">
+                    </div>
+                    <div class="form-group">
+                        <label>Texto do Botão Ir Directo ao Site (Opcional)</label>
+                        <input type="text" id="adm-script-btntext" class="form-control" placeholder="Ex: Ir ao Site / Baixar">
+                    </div>
+                    <button onclick="addScriptItem()" class="btn-primary">Publicar Script</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURAÇÕES PADRÃO
+        const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1562142863687684192/C1dGyTLBCMlcVLmit8hMl3MQ3gjRwLend1oE0h1625oTcsb49vo0HMNia-utPn_zBwTj";
+        const ROLE_MENTIONS = "<@&1562528491784638494> <@&1561124037030318115>";
+        const ADM_PASSWORD = "scriptsdel";
+
+        // CONFIGURAÇÃO DO SEU FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyAkGVvTaAZNtqI30Jpf85l6ZCMXiQgBBg",
+            authDomain: "delcin-site.firebaseapp.com",
+            databaseURL: "https://delcin-site-default-rtdb.firebaseio.com",
+            projectId: "delcin-site",
+            storageBucket: "delcin-site.firebasestorage.app",
+            messagingSenderId: "112477015155",
+            appId: "1:112477015155:web:9dad89d37d32c8ae34ae06",
+            measurementId: "G-SXBYPT5H3B"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // ESTADO DA APLICAÇÃO
+        let appState = {
+            users: [],
+            categories: ["MTA", "GTA RP", "Discord", "Outros"],
+            scripts: [],
+            discordUrl: "https://discord.gg",
+            staff: {
+                staff1: { name: "@Delcin", img: "https://via.placeholder.com/100/7c3aed/ffffff?text=Dono" },
+                staff2: { name: "@StaffMaster", img: "https://via.placeholder.com/100/7c3aed/ffffff?text=Staff" },
+                staff3: { name: "@DevDelcin", img: "https://via.placeholder.com/100/7c3aed/ffffff?text=Site" }
+            }
+        };
+
+        let currentCategory = "all";
+
+        // INICIALIZAÇÃO COM ESCUTA DO FIREBASE EM TEMPO REAL
+        window.addEventListener('DOMContentLoaded', () => {
+            // Escutar alterações do Firebase
+            database.ref('appData').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    appState = {
+                        users: data.users || [],
+                        categories: data.categories || ["MTA", "GTA RP", "Discord", "Outros"],
+                        scripts: data.scripts || [],
+                        discordUrl: data.discordUrl || "https://discord.gg",
+                        staff: data.staff || appState.staff
+                    };
+                }
+                renderApp();
+            });
+        });
+
+        function syncToFirebase() {
+            database.ref('appData').set(appState);
+        }
+
+        function showNotification(message, isError = false) {
+            const toast = document.getElementById('notification-toast');
+            const icon = document.getElementById('toast-icon');
+            const msgSpan = document.getElementById('toast-message');
+
+            toast.className = isError ? 'toast-error' : 'toast-success';
+            icon.className = isError ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+            msgSpan.innerText = message;
+
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        function switchTab(tab) {
+            const loginBtn = document.getElementById('tab-login-btn');
+            const regBtn = document.getElementById('tab-register-btn');
+            const loginForm = document.getElementById('login-form');
+            const regForm = document.getElementById('register-form');
+
+            if (tab === 'login') {
+                loginBtn.classList.add('active');
+                regBtn.classList.remove('active');
+                loginForm.style.display = 'block';
+                regForm.style.display = 'none';
+            } else {
+                regBtn.classList.add('active');
+                loginBtn.classList.remove('active');
+                regForm.style.display = 'block';
+                loginForm.style.display = 'none';
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+
+            if (!username || !password) return;
+
+            const userExists = appState.users.some(u => u.username.toLowerCase() === username.toLowerCase());
+
+            if (userExists) {
+                showNotification("Usuário já cadastrado!", true);
+                return;
+            }
+
+            appState.users.push({ username, password });
+            syncToFirebase();
+
+            showNotification("Cadastro concluído!");
+            sendDiscordWebhook(username);
+
+            document.getElementById('register-form').reset();
+            switchTab('login');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+
+            const user = appState.users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+
+            if (user) {
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
+                document.getElementById('logout-btn').style.display = 'block';
+                showNotification(`Bem-vindo, ${username}!`);
+            } else {
+                showNotification("Usuário errado ou sem cadastro", true);
+            }
+        }
+
+        function logout() {
+            document.getElementById('auth-container').style.display = 'flex';
+            document.getElementById('app-content').style.display = 'none';
+            document.getElementById('logout-btn').style.display = 'none';
+            document.getElementById('login-form').reset();
+        }
+
+        function sendDiscordWebhook(username) {
+            const payload = {
+                content: `${ROLE_MENTIONS}\n🎉 **Novo Cadastro Realizado no Site!**\n👤 **Usuário:** \`${username}\``
+            };
+
+            fetch(DISCORD_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).catch(err => console.error("Erro Webhook Discord:", err));
+        }
+
+        function renderApp() {
+            document.getElementById('discord-link-btn').href = appState.discordUrl;
+
+            document.getElementById('staff-img-1').src = appState.staff.staff1.img;
+            document.getElementById('staff-name-1').innerText = appState.staff.staff1.name;
+            document.getElementById('staff-img-2').src = appState.staff.staff2.img;
+            document.getElementById('staff-name-2').innerText = appState.staff.staff2.name;
+            document.getElementById('staff-img-3').src = appState.staff.staff3.img;
+            document.getElementById('staff-name-3').innerText = appState.staff.staff3.name;
+
+            const filterContainer = document.getElementById('category-filter-list');
+            filterContainer.innerHTML = `<button class="cat-btn ${currentCategory === 'all' ? 'active' : ''}" onclick="filterCategory('all')">Todos</button>`;
+            
+            const admCatSelect = document.getElementById('adm-script-category');
+            admCatSelect.innerHTML = '';
+
+            appState.categories.forEach(cat => {
+                filterContainer.innerHTML += `<button class="cat-btn ${currentCategory === cat ? 'active' : ''}" onclick="filterCategory('${cat}')">${cat}</button>`;
+                admCatSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+
+            const container = document.getElementById('scripts-container');
+            container.innerHTML = '';
+
+            const filteredScripts = currentCategory === 'all' 
+                ? appState.scripts 
+                : appState.scripts.filter(s => s.category === currentCategory);
+
+            filteredScripts.forEach(script => {
+                const isLink = script.content.startsWith('http://') || script.content.startsWith('https://');
+                const btnLabel = script.btnText || "Acessar Site";
+
+                const actionHtml = isLink 
+                    ? `<a href="${script.content}" target="_blank" class="btn-action-site"><i class="fas fa-external-link-alt"></i> ${btnLabel}</a>`
+                    : `<button class="btn-copy" onclick="copyToClipboard('${escapeQuotes(script.content)}')" title="Copiar Script"><i class="fas fa-book-open"></i><i class="fas fa-book-open" style="margin-left:-4px;"></i></button>`;
+
+                container.innerHTML += `
+                    <div class="script-card">
+                        <img src="${script.img || 'https://via.placeholder.com/300x160/2e1065/ffffff?text=Delcin+Scripts'}" class="script-img">
+                        <div class="script-body">
+                            <div class="script-title">${script.title}</div>
+                            <div class="script-desc">${script.description}</div>
+                            <div class="action-area">
+                                ${actionHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterCategory(cat) {
+            currentCategory = cat;
+            renderApp();
+        }
+
+        function escapeQuotes(str) {
+            return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification("Script copiado com sucesso!");
+            });
+        }
+
+        function openAdmModal() {
+            document.getElementById('adm-modal').style.display = 'flex';
+            document.getElementById('adm-auth-step').style.display = 'block';
+            document.getElementById('adm-dashboard-step').style.display = 'none';
+            document.getElementById('adm-password-input').value = '';
+        }
+
+        function closeAdmModal() {
+            document.getElementById('adm-modal').style.display = 'none';
+        }
+
+        function verifyAdmPassword() {
+            const pass = document.getElementById('adm-password-input').value;
+            if (pass === ADM_PASSWORD) {
+                document.getElementById('adm-auth-step').style.display = 'none';
+                document.getElementById('adm-dashboard-step').style.display = 'block';
+                
+                document.getElementById('adm-discord-link').value = appState.discordUrl;
+                document.getElementById('adm-staff1-img').value = appState.staff.staff1.img;
+                document.getElementById('adm-staff1-name').value = appState.staff.staff1.name;
+                document.getElementById('adm-staff2-img').value = appState.staff.staff2.img;
+                document.getElementById('adm-staff2-name').value = appState.staff.staff2.name;
+                document.getElementById('adm-staff3-img').value = appState.staff.staff3.img;
+                document.getElementById('adm-staff3-name').value = appState.staff.staff3.name;
+            } else {
+                showNotification("Senha ADM incorreta!", true);
+            }
+        }
+
+        function saveDiscordLink() {
+            const url = document.getElementById('adm-discord-link').value.trim();
+            if (url) {
+                appState.discordUrl = url;
+                syncToFirebase();
+                showNotification("Link do Discord atualizado!");
+            }
+        }
+
+        function saveStaffConfig() {
+            appState.staff.staff1.img = document.getElementById('adm-staff1-img').value || appState.staff.staff1.img;
+            appState.staff.staff1.name = document.getElementById('adm-staff1-name').value || appState.staff.staff1.name;
+            appState.staff.staff2.img = document.getElementById('adm-staff2-img').value || appState.staff.staff2.img;
+            appState.staff.staff2.name = document.getElementById('adm-staff2-name').value || appState.staff.staff2.name;
+            appState.staff.staff3.img = document.getElementById('adm-staff3-img').value || appState.staff.staff3.img;
+            appState.staff.staff3.name = document.getElementById('adm-staff3-name').value || appState.staff.staff3.name;
+            
+            syncToFirebase();
+            showNotification("Equipe atualizada!");
+        }
+
+        function createCategory() {
+            const catName = document.getElementById('adm-new-cat').value.trim();
+            if (catName && !appState.categories.includes(catName)) {
+                appState.categories.push(catName);
+                syncToFirebase();
+                document.getElementById('adm-new-cat').value = '';
+                showNotification("Categoria adicionada!");
+            }
+        }
+
+        function addScriptItem() {
+            const title = document.getElementById('adm-script-title').value.trim();
+            const img = document.getElementById('adm-script-img').value.trim();
+            const description = document.getElementById('adm-script-desc').value.trim();
+            const category = document.getElementById('adm-script-category').value;
+            const content = document.getElementById('adm-script-content').value.trim();
+            const btnText = document.getElementById('adm-script-btntext').value.trim();
+
+            if (!title || !content) {
+                showNotification("Preencha ao menos o Título e o Conteúdo!", true);
+                return;
+            }
+
+            appState.scripts.push({
+                title, img, description, category, content, btnText
+            });
+
+            syncToFirebase();
+
+            document.getElementById('adm-script-title').value = '';
+            document.getElementById('adm-script-img').value = '';
+            document.getElementById('adm-script-desc').value = '';
+            document.getElementById('adm-script-content').value = '';
+            document.getElementById('adm-script-btntext').value = '';
+
+            showNotification("Script adicionado com sucesso!");
+        }
+    </script>
+</body>
+</html>
