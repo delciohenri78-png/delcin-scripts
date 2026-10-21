@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK (v9 Compat para inclusão via CDN) -->
+    <!-- Firebase SDK (v9 Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
@@ -30,7 +30,7 @@
             overflow-x: hidden;
         }
 
-        /* Notificação Toast Flutuante */
+        /* Notificação Toast */
         #notification-toast {
             position: fixed;
             top: -100px;
@@ -256,6 +256,21 @@
             box-shadow: 0 8px 25px rgba(124, 58, 237, 0.6);
         }
 
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
         /* App Content */
         #app-content {
             display: none;
@@ -287,7 +302,6 @@
             flex-wrap: nowrap;
         }
 
-        /* Card da Equipe com Animação RGB Neon */
         @keyframes rgbBorder {
             0% { border-color: #ff0000; box-shadow: 0 0 15px rgba(255,0,0,0.4); }
             20% { border-color: #8b00ff; box-shadow: 0 0 15px rgba(139,0,255,0.4); }
@@ -379,6 +393,7 @@
             display: flex;
             flex-direction: column;
             transition: all 0.3s;
+            position: relative;
         }
 
         .script-card:hover {
@@ -452,7 +467,7 @@
             color: white;
         }
 
-        /* Formulários do Painel ADM */
+        /* Form ADM e Lista de Deleção */
         .adm-section {
             margin-bottom: 25px;
             padding-bottom: 15px;
@@ -463,6 +478,17 @@
             color: #c084fc;
             font-size: 1.1rem;
             margin-bottom: 15px;
+        }
+
+        .adm-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0b0612;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #2e1065;
         }
 
         @media (max-width: 768px) {
@@ -493,7 +519,7 @@
         </div>
     </header>
 
-    <!-- Tela de Autenticação Separada (Início) -->
+    <!-- Tela de Autenticação -->
     <div class="auth-wrapper" id="auth-container">
         <div class="auth-box">
             <div class="auth-tabs">
@@ -501,7 +527,7 @@
                 <button class="tab-btn" id="tab-register-btn" onclick="switchTab('register')">Criar Cadastro</button>
             </div>
 
-            <!-- Formulário de Login -->
+            <!-- Login -->
             <form id="login-form" onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label>Nome do Discord</label>
@@ -514,7 +540,7 @@
                 <button type="submit" class="btn-primary">Entrar</button>
             </form>
 
-            <!-- Formulário de Cadastro -->
+            <!-- Cadastro -->
             <form id="register-form" style="display: none;" onsubmit="handleRegister(event)">
                 <div class="form-group">
                     <label>Nome do Discord</label>
@@ -529,10 +555,10 @@
         </div>
     </div>
 
-    <!-- Conteúdo Interno do Site (Revelado somente após Login) -->
+    <!-- Conteúdo Interno -->
     <main id="app-content">
         
-        <!-- Seção 3 Abas Equipe -->
+        <!-- Equipe -->
         <h2 class="section-title">Nossa Equipe</h2>
         <div class="staff-grid">
             <div class="staff-card">
@@ -552,16 +578,14 @@
             </div>
         </div>
 
-        <!-- Seção Categorias & Scripts -->
+        <!-- Categorias & Scripts -->
         <h2 class="section-title">Scripts & Recursos</h2>
         
         <div class="category-filter" id="category-filter-list">
             <button class="cat-btn active" onclick="filterCategory('all')">Todos</button>
         </div>
 
-        <div class="scripts-grid" id="scripts-container">
-            <!-- Cards de Scripts são gerados aqui -->
-        </div>
+        <div class="scripts-grid" id="scripts-container"></div>
 
     </main>
 
@@ -573,7 +597,7 @@
                 <button onclick="closeAdmModal()" style="background:none; border:none; color:#9ca3af; font-size:1.5rem; cursor:pointer;">&times;</button>
             </div>
 
-            <!-- Autenticação ADM -->
+            <!-- Login ADM -->
             <div id="adm-auth-step">
                 <div class="form-group">
                     <label>Senha de Acesso ADM</label>
@@ -582,10 +606,10 @@
                 <button onclick="verifyAdmPassword()" class="btn-primary">Acessar Painel</button>
             </div>
 
-            <!-- Conteúdo do Painel ADM -->
+            <!-- Dashboard ADM -->
             <div id="adm-dashboard-step" style="display: none;">
                 
-                <!-- Link do Discord -->
+                <!-- Link Discord -->
                 <div class="adm-section">
                     <h3>Link do Servidor Discord</h3>
                     <div class="form-group">
@@ -594,37 +618,39 @@
                     <button onclick="saveDiscordLink()" class="btn-primary" style="padding:8px 15px; font-size:0.85rem;">Salvar Link Discord</button>
                 </div>
 
-                <!-- Gestão da Equipe -->
+                <!-- Gestão Staff -->
                 <div class="adm-section">
                     <h3>Editar Cards da Staff</h3>
                     <div class="form-group">
                         <label>Foto + Nome (Dono)</label>
-                        <input type="text" id="adm-staff1-img" class="form-control" placeholder="Link da foto Dono" style="margin-bottom: 5px;">
+                        <input type="text" id="adm-staff1-img" class="form-control" placeholder="Link da foto" style="margin-bottom: 5px;">
                         <input type="text" id="adm-staff1-name" class="form-control" placeholder="Nome Dono">
                     </div>
                     <div class="form-group">
                         <label>Foto + Nome (Dono Staff)</label>
-                        <input type="text" id="adm-staff2-img" class="form-control" placeholder="Link foto Dono Staff" style="margin-bottom: 5px;">
+                        <input type="text" id="adm-staff2-img" class="form-control" placeholder="Link da foto" style="margin-bottom: 5px;">
                         <input type="text" id="adm-staff2-name" class="form-control" placeholder="Nome Dono Staff">
                     </div>
                     <div class="form-group">
                         <label>Foto + Nome (Dono Site)</label>
-                        <input type="text" id="adm-staff3-img" class="form-control" placeholder="Link foto Dono Site" style="margin-bottom: 5px;">
+                        <input type="text" id="adm-staff3-img" class="form-control" placeholder="Link da foto" style="margin-bottom: 5px;">
                         <input type="text" id="adm-staff3-name" class="form-control" placeholder="Nome Dono Site">
                     </div>
                     <button onclick="saveStaffConfig()" class="btn-primary" style="padding:8px 15px; font-size:0.85rem;">Salvar Equipe</button>
                 </div>
 
-                <!-- Gestão de Categoria -->
+                <!-- Gestão & Remoção de Categorias -->
                 <div class="adm-section">
-                    <h3>Criar Nova Categoria</h3>
-                    <div class="form-group">
-                        <input type="text" id="adm-new-cat" class="form-control" placeholder="Nome da Categoria">
+                    <h3>Gerenciar Categorias</h3>
+                    <div class="form-group" style="display: flex; gap: 8px;">
+                        <input type="text" id="adm-new-cat" class="form-control" placeholder="Nova Categoria">
+                        <button onclick="createCategory()" class="btn-primary" style="width: auto; padding: 0 15px;">Criar</button>
                     </div>
-                    <button onclick="createCategory()" class="btn-primary" style="padding:8px 15px; font-size:0.85rem;">Adicionar Categoria</button>
+                    <label style="margin-top: 10px; display:block;">Remover Categorias Existentes:</label>
+                    <div id="adm-categories-list" style="margin-top: 8px;"></div>
                 </div>
 
-                <!-- Adicionar Script / Recurso -->
+                <!-- Adicionar Script -->
                 <div class="adm-section">
                     <h3>Adicionar Novo Script</h3>
                     <div class="form-group">
@@ -648,10 +674,16 @@
                         <input type="text" id="adm-script-content" class="form-control" placeholder="https://link.com OU código do script">
                     </div>
                     <div class="form-group">
-                        <label>Texto do Botão Ir Directo ao Site (Opcional)</label>
+                        <label>Texto do Botão (Opcional)</label>
                         <input type="text" id="adm-script-btntext" class="form-control" placeholder="Ex: Ir ao Site / Baixar">
                     </div>
                     <button onclick="addScriptItem()" class="btn-primary">Publicar Script</button>
+                </div>
+
+                <!-- Remover Scripts Publicados -->
+                <div class="adm-section">
+                    <h3>Remover Scripts Existentes</h3>
+                    <div id="adm-scripts-list"></div>
                 </div>
 
             </div>
@@ -659,12 +691,12 @@
     </div>
 
     <script>
-        // CONFIGURAÇÕES PADRÃO
+        // CONFIGURAÇÕES
         const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1562142863687684192/C1dGyTLBCMlcVLmit8hMl3MQ3gjRwLend1oE0h1625oTcsb49vo0HMNia-utPn_zBwTj";
         const ROLE_MENTIONS = "<@&1562528491784638494> <@&1561124037030318115>";
         const ADM_PASSWORD = "scriptsdel";
 
-        // CONFIGURAÇÃO DO SEU FIREBASE
+        // FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyAkGVvTaAZNtqI30Jpf85l6ZCMXiQgBBg",
             authDomain: "delcin-site.firebaseapp.com",
@@ -676,11 +708,9 @@
             measurementId: "G-SXBYPT5H3B"
         };
 
-        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // ESTADO DA APLICAÇÃO
         let appState = {
             users: [],
             categories: ["MTA", "GTA RP", "Discord", "Outros"],
@@ -695,9 +725,7 @@
 
         let currentCategory = "all";
 
-        // INICIALIZAÇÃO COM ESCUTA DO FIREBASE EM TEMPO REAL
         window.addEventListener('DOMContentLoaded', () => {
-            // Escutar alterações do Firebase
             database.ref('appData').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -710,6 +738,7 @@
                     };
                 }
                 renderApp();
+                renderAdmLists();
             });
         });
 
@@ -727,9 +756,7 @@
             msgSpan.innerText = message;
 
             toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3500);
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
         }
 
         function switchTab(tab) {
@@ -845,7 +872,7 @@
 
                 const actionHtml = isLink 
                     ? `<a href="${script.content}" target="_blank" class="btn-action-site"><i class="fas fa-external-link-alt"></i> ${btnLabel}</a>`
-                    : `<button class="btn-copy" onclick="copyToClipboard('${escapeQuotes(script.content)}')" title="Copiar Script"><i class="fas fa-book-open"></i><i class="fas fa-book-open" style="margin-left:-4px;"></i></button>`;
+                    : `<button class="btn-copy" onclick="copyToClipboard('${escapeQuotes(script.content)}')" title="Copiar Script"><i class="fas fa-copy"></i> Copiar</button>`;
 
                 container.innerHTML += `
                     <div class="script-card">
@@ -860,6 +887,36 @@
                     </div>
                 `;
             });
+        }
+
+        function renderAdmLists() {
+            // Renderiza Lista de Categorias para Remover
+            const catList = document.getElementById('adm-categories-list');
+            if (catList) {
+                catList.innerHTML = '';
+                appState.categories.forEach((cat, index) => {
+                    catList.innerHTML += `
+                        <div class="adm-list-item">
+                            <span>${cat}</span>
+                            <button onclick="removeCategory(${index})" class="btn-danger"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+            }
+
+            // Renderiza Lista de Scripts para Remover
+            const scriptList = document.getElementById('adm-scripts-list');
+            if (scriptList) {
+                scriptList.innerHTML = '';
+                appState.scripts.forEach((script, index) => {
+                    scriptList.innerHTML += `
+                        <div class="adm-list-item">
+                            <span><strong>${script.title}</strong> (${script.category})</span>
+                            <button onclick="removeScript(${index})" class="btn-danger"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+            }
         }
 
         function filterCategory(cat) {
@@ -901,6 +958,8 @@
                 document.getElementById('adm-staff2-name').value = appState.staff.staff2.name;
                 document.getElementById('adm-staff3-img').value = appState.staff.staff3.img;
                 document.getElementById('adm-staff3-name').value = appState.staff.staff3.name;
+
+                renderAdmLists();
             } else {
                 showNotification("Senha ADM incorreta!", true);
             }
@@ -937,6 +996,14 @@
             }
         }
 
+        function removeCategory(index) {
+            if (confirm(`Deseja mesmo remover a categoria "${appState.categories[index]}"?`)) {
+                appState.categories.splice(index, 1);
+                syncToFirebase();
+                showNotification("Categoria removida!");
+            }
+        }
+
         function addScriptItem() {
             const title = document.getElementById('adm-script-title').value.trim();
             const img = document.getElementById('adm-script-img').value.trim();
@@ -946,14 +1013,11 @@
             const btnText = document.getElementById('adm-script-btntext').value.trim();
 
             if (!title || !content) {
-                showNotification("Preencha ao menos o Título e o Conteúdo!", true);
+                showNotification("Preencha o Título e o Conteúdo!", true);
                 return;
             }
 
-            appState.scripts.push({
-                title, img, description, category, content, btnText
-            });
-
+            appState.scripts.push({ title, img, description, category, content, btnText });
             syncToFirebase();
 
             document.getElementById('adm-script-title').value = '';
@@ -962,7 +1026,15 @@
             document.getElementById('adm-script-content').value = '';
             document.getElementById('adm-script-btntext').value = '';
 
-            showNotification("Script adicionado com sucesso!");
+            showNotification("Script publicado!");
+        }
+
+        function removeScript(index) {
+            if (confirm(`Deseja mesmo apagar o script "${appState.scripts[index].title}"?`)) {
+                appState.scripts.splice(index, 1);
+                syncToFirebase();
+                showNotification("Script removido!");
+            }
         }
     </script>
 </body>
